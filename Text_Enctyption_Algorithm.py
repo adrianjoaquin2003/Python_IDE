@@ -70,7 +70,7 @@ class Note:
         if val:
             password = input("Password: ")
             #if password is correct return true to the property function
-            if password == "none":
+            if password == "Emm@W@lshJuly42021":
                 print("ACCESS GRANTED\n")
                 self._check_password = val
             else:
