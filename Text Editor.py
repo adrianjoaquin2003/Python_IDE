@@ -119,14 +119,7 @@ def decrypt_file():
     text_file.close()
 
 
-# Run code file
-def run_file():
-    global open_status_name
-    
-    terminal_output = Console(root)
-    terminal_output.pack(fill=X, expand=True)
-    if not terminal_output.alive:
-        terminal_output.terminal_output.configure(state='disabled')
+has_run = False
 
 
 def auto_indent(event):
@@ -153,7 +146,7 @@ text_scroll = Scrollbar(my_frame)
 text_scroll.pack(side=RIGHT, fill=Y)
 
 # Create text box
-my_text = Text(my_frame, height=25,
+my_text = Text(my_frame, height=10,
                font=("Courier", 16), selectbackground="yellow",
                selectforeground="black", undo=True, yscrollcommand=text_scroll.set)
 my_text.pack(fill=X)
@@ -166,18 +159,6 @@ text_scroll.config(command=my_text.yview)
 my_menu = Menu(root)
 root.config(menu=my_menu)
 
-# Add file menu
-file_menu = Menu(my_menu, tearoff=False)
-my_menu.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open", command=open_file)
-file_menu.add_command(label="New", command=new_file)
-file_menu.add_command(label="Save", command=save_file)
-file_menu.add_command(label="Save as", command=save_as_file)
-file_menu.add_command(label="Run", command=run_file)
-file_menu.add_command(label="Decrypt", command=decrypt_file)
-file_menu.add_separator()
-file_menu.add_command(label="Exit and Encrypt", command=exit_and_encrypt)
-
 # Add status bar to bottom of app
 status_bar = Label(root, text='Ready        ', anchor=E)
 status_bar.pack(fill=X, side=BOTTOM, ipady=5)
@@ -185,6 +166,11 @@ status_bar.pack(fill=X, side=BOTTOM, ipady=5)
 
 class Console(Frame):
     def __init__(self, parent=None, **kwargs):
+
+        global has_run
+        if not has_run:
+            has_run = True
+
         Frame.__init__(self, parent, **kwargs)
         self.parent = parent
 
@@ -219,17 +205,6 @@ class Console(Frame):
         self.terminal_output.bind('<BackSpace>', self.on_bkspace)
         self.terminal_output.bind('<Delete>', self.on_delete)
 
-    def destroy(self):
-        """This is the function that is automatically called when the widget is destroyed."""
-        self.alive = False
-        # write exit() to the console in order to stop it running
-        self.p.stdin.write("exit()\n".encode())
-        self.p.stdin.flush()
-        # call the destroy methods to properly destroy widgets
-        self.terminal_output.destroy()
-        Frame.destroy(self)
-        root.destroy()
-
     def enter(self, event):
         """The <Return> key press handler"""
         self.terminal_output.configure(state='normal')
@@ -241,7 +216,6 @@ class Console(Frame):
                     self.terminal_output.insert(END, selected)
                     self.terminal_output.mark_set(INSERT, END)
                     self.terminal_output.see(INSERT)
-                    self.terminal_output.configure(state='disabled')
                     return 'break'
             except:
                 selected = self.terminal_output.get(
@@ -249,7 +223,6 @@ class Console(Frame):
                 self.terminal_output.insert(END, selected.strip(': '))
                 self.terminal_output.mark_set(INSERT, END)
                 self.terminal_output.see(INSERT)
-                self.terminal_output.configure(state='disabled')
             return 'break'
         string = self.terminal_output.get(1.0, END)[self.line_start:]
         self.line_start += len(string)
@@ -307,6 +280,34 @@ terminal = Frame(root, height=200, bg="blue")
 
 terminal.pack(fill=X, expand=YES, pady=5)
 
+
+# Run code file
+def run_file():
+    global has_run
+
+    terminal_output = Console(root)
+    terminal_output.pack(fill=X, expand=True)
+
+    #terminal_output.terminal_output.configure(state='disabled')
+
+    if has_run:
+        terminal_output.p.terminate()
+        has_run = False
+
+    del terminal_output
+
+
+# Add file menu
+file_menu = Menu(my_menu, tearoff=False)
+my_menu.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="Open", command=open_file)
+file_menu.add_command(label="New", command=new_file)
+file_menu.add_command(label="Save", command=save_file)
+file_menu.add_command(label="Save as", command=save_as_file)
+file_menu.add_command(label="Run", command=run_file)
+file_menu.add_command(label="Decrypt", command=decrypt_file)
+file_menu.add_separator()
+file_menu.add_command(label="Exit and Encrypt", command=exit_and_encrypt)
 
 Percolator(my_text).insertfilter(ColorDelegator())
 root.mainloop()
