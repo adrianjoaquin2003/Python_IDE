@@ -268,6 +268,8 @@ class Console(Frame):
         # run this method again after 10ms
         if self.alive:
             self.after(10, self.write_loop)
+        else:
+            self.p.terminate()
 
     def write(self, string):
         self.terminal_output.configure(state='normal')
@@ -287,12 +289,6 @@ def run_file():
 
     terminal_output = Console(root)
     terminal_output.pack(fill=X, expand=True)
-
-    #terminal_output.terminal_output.configure(state='disabled')
-
-    if has_run:
-        terminal_output.p.terminate()
-        has_run = False
 
     del terminal_output
 
